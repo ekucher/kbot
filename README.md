@@ -56,6 +56,10 @@ go mod download
 
 Create a Telegram bot using BotFather.
 
+The bot uses the following environment variable:
+
+TELE_TOKEN
+
 Set the Telegram token using the `TELE_TOKEN` environment variable.
 
 ### Windows PowerShell
