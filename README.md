@@ -60,6 +60,22 @@ The bot uses the following environment variable:
 
 TELE_TOKEN
 
+'TELE_TOKEN'
+
+The Telegram message handlers use Telebot context:
+
+.Context
+
+'.Context'
+
+Handler functions receive `tele.Context`, for example:
+
+```go
+func Start(c tele.Context) error {
+    return c.Send("Hello!")
+}
+```
+
 Set the Telegram token using the `TELE_TOKEN` environment variable.
 
 ### Windows PowerShell
