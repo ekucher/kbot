@@ -1,6 +1,3 @@
-TELE_TOKEN
-.Context
-
 # Telegram Bot in Go
 
 Simple Telegram bot written in Go using Cobra and Telebot v4.
