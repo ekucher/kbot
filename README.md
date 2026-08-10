@@ -45,8 +45,8 @@ golang
 Clone the repository:
 
 ```bash
-git clone https://github.com/ekucher/telegram-bot.git
-cd telegram-bot
+git clone https://github.com/ekucher/kbot.git
+cd kbot
 ```
 
 Install dependencies:

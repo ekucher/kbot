@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/ekucher/telegram-bot/cmd"
+	"github.com/ekucher/kbot/cmd"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module github.com/ekucher/telegram-bot
+module github.com/ekucher/kbot
 
 go 1.26.5
 

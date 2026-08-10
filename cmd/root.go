@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ekucher/telegram-bot/internal/handlers"
+	"github.com/ekucher/kbot/internal/handlers"
 	"github.com/spf13/cobra"
 	tele "gopkg.in/telebot.v4"
 )
