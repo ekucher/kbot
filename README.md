@@ -1,3 +1,6 @@
+TELE_TOKEN
+.Context
+
 # Telegram Bot in Go
 
 Simple Telegram bot written in Go using Cobra and Telebot v4.
@@ -60,21 +63,7 @@ The bot uses the following environment variable:
 
 TELE_TOKEN
 
-'TELE_TOKEN'
-
-The Telegram message handlers use Telebot context:
-
-.Context
-
-'.Context'
-
-Handler functions receive `tele.Context`, for example:
-
-```go
-func Start(c tele.Context) error {
-    return c.Send("Hello!")
-}
-```
+The Telegram message handlers use `tele.Context`.
 
 Set the Telegram token using the `TELE_TOKEN` environment variable.
 
