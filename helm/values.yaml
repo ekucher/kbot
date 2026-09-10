@@ -3,7 +3,7 @@
 image:
   registry: "ghcr.io"
   repository: "ekucher/kbot"
-  tag: "v1.0.0-aa44ffd"
+  tag: "v1.0.0-567b0a9"
   pullPolicy: IfNotPresent
   os: linux
   arch: amd64
