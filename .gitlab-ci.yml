@@ -1,0 +1,95 @@
+default:
+  image: golang:1.26.5-alpine
+
+stages:
+  - lint
+  - test
+  - build
+
+variables:
+  OS:
+    value: "linux"
+    options:
+      - "linux"
+      - "darwin"
+      - "windows"
+    description: "Target operating system"
+
+  ARCH:
+    value: "amd64"
+    options:
+      - "amd64"
+      - "arm64"
+    description: "Target architecture"
+
+  SKIP_TESTS:
+    value: "false"
+    options:
+      - "false"
+      - "true"
+    description: "Skip running tests"
+
+  SKIP_LINT:
+    value: "false"
+    options:
+      - "false"
+      - "true"
+    description: "Skip source formatting check"
+
+lint:
+  stage: lint
+  rules:
+    - if: '$SKIP_LINT == "true"'
+      when: never
+    - when: on_success
+  script:
+    - go version
+    - |
+      UNFORMATTED="$(find . -type f -name '*.go' -not -path './.git/*' -exec gofmt -l {} +)"
+
+      if [ -n "$UNFORMATTED" ]; then
+        echo "Files require gofmt:"
+        echo "$UNFORMATTED"
+        exit 1
+      fi
+
+      echo "Go formatting check passed"
+
+test:
+  stage: test
+  rules:
+    - if: '$SKIP_TESTS == "true"'
+      when: never
+    - when: on_success
+  script:
+    - go version
+    - go test -v ./...
+
+build:
+  stage: build
+  script:
+    - go version
+    - mkdir -p bin
+    - |
+      EXT=""
+
+      if [ "$OS" = "windows" ]; then
+        EXT=".exe"
+      fi
+
+      ARTIFACT="bin/kbot-${OS}-${ARCH}${EXT}"
+
+      echo "Target platform: ${OS}/${ARCH}"
+
+      CGO_ENABLED=0 \
+      GOOS="${OS}" \
+      GOARCH="${ARCH}" \
+      go build -trimpath -ldflags="-s -w" -o "${ARTIFACT}" .
+
+      echo "Artifact: ${ARTIFACT}"
+
+  artifacts:
+    name: "kbot-${OS}-${ARCH}-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - bin/
+    expire_in: 7 days
