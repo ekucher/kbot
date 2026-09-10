@@ -32,7 +32,6 @@ pipeline {
     }
 
     options {
-        timestamps()
         disableConcurrentBuilds()
     }
 
