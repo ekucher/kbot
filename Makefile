@@ -2,14 +2,14 @@ APP := kbot
 REGISTRY := ghcr.io
 OWNER := ekucher
 
-VERSION ?= v1.0.0
+VERSION ?= $(shell git describe --tags --abbrev=0)
 COMMIT ?= $(shell git rev-parse --short=7 HEAD)
 
 OS ?= linux
 ARCH ?= amd64
 
-TAG := $(VERSION)-$(COMMIT)-$(OS)-$(ARCH)
-IMAGE := $(REGISTRY)/$(OWNER)/$(APP):$(TAG)
+TAG := $(VERSION)-$(COMMIT)
+IMAGE := $(REGISTRY)/$(OWNER)/$(APP):$(TAG)-$(OS)-$(ARCH)
 
 .PHONY: test build image push image-name image-tag clean
 

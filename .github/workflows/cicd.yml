@@ -14,7 +14,6 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ekucher/kbot
-  VERSION: v1.0.0
 
 jobs:
   build:
@@ -43,14 +42,16 @@ jobs:
         id: vars
         shell: bash
         run: |
-          SHORT_SHA="${GITHUB_SHA::7}"
-          IMAGE_TAG="${VERSION}-${SHORT_SHA}-linux-amd64"
+          VERSION="$(git describe --tags --abbrev=0)"
+          SHORT_SHA="$(git rev-parse --short=7 HEAD)"
+          IMAGE_TAG="${VERSION}-${SHORT_SHA}"
 
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
-          echo "image=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "image=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}-linux-amd64" >> "$GITHUB_OUTPUT"
 
-          echo "Image: ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+          echo "Image: ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}-linux-amd64"
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -62,7 +63,7 @@ jobs:
       - name: Build Docker image
         run: |
           make image \
-            VERSION="${VERSION}" \
+            VERSION="${{ steps.vars.outputs.version }}" \
             COMMIT="${{ steps.vars.outputs.short_sha }}" \
             OS=linux \
             ARCH=amd64
@@ -70,7 +71,7 @@ jobs:
       - name: Push Docker image
         run: |
           make push \
-            VERSION="${VERSION}" \
+            VERSION="${{ steps.vars.outputs.version }}" \
             COMMIT="${{ steps.vars.outputs.short_sha }}" \
             OS=linux \
             ARCH=amd64
