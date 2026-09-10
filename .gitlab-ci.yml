@@ -68,7 +68,6 @@ test:
 build:
   stage: build
   script:
-    - go version
     - mkdir -p bin
     - |
       EXT=""
