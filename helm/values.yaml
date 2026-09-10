@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   registry: "ghcr.io"
   repository: "ekucher/kbot"
-  tag: "v1.0.0-initial-linux-amd64"
+  tag: "v1.0.0-cb4066c-linux-amd64"
   pullPolicy: IfNotPresent
   os: linux
   arch: amd64
