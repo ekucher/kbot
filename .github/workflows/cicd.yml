@@ -1,0 +1,108 @@
+name: kbot CI/CD
+
+on:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - "helm/values.yaml"
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ekucher/kbot
+  VERSION: v1.0.0
+
+jobs:
+  build:
+    name: Build and publish kbot
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run tests
+        run: make test
+
+      - name: Build binary
+        run: make build
+
+      - name: Calculate image tag
+        id: vars
+        shell: bash
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          IMAGE_TAG="${VERSION}-${SHORT_SHA}-linux-amd64"
+
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "image=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+
+          echo "Image: ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          make image \
+            VERSION="${VERSION}" \
+            COMMIT="${{ steps.vars.outputs.short_sha }}" \
+            OS=linux \
+            ARCH=amd64
+
+      - name: Push Docker image
+        run: |
+          make push \
+            VERSION="${VERSION}" \
+            COMMIT="${{ steps.vars.outputs.short_sha }}" \
+            OS=linux \
+            ARCH=amd64
+
+      - name: Update Helm image tag
+        shell: bash
+        run: |
+          sed -i \
+            's|^[[:space:]]*tag:.*|  tag: "${{ steps.vars.outputs.image_tag }}"|' \
+            helm/values.yaml
+
+          echo "Updated Helm values:"
+          grep -A6 '^image:' helm/values.yaml
+
+      - name: Commit Helm values
+        shell: bash
+        run: |
+          if git diff --quiet -- helm/values.yaml; then
+            echo "No Helm values changes"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add helm/values.yaml
+          git commit -m "ci: deploy ${{ steps.vars.outputs.image_tag }}"
+          git push origin HEAD:develop
+
+      - name: Summary
+        run: |
+          echo "### kbot container image" >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.vars.outputs.image }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

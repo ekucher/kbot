@@ -1,0 +1,13 @@
+replicaCount: 1
+
+image:
+  registry: "ghcr.io"
+  repository: "ekucher/kbot"
+  tag: "v1.0.0-initial-linux-amd64"
+  pullPolicy: IfNotPresent
+  os: linux
+  arch: amd64
+
+telegram:
+  secretName: kbot-secret
+  secretKey: TELE_TOKEN

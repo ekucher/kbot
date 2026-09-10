@@ -93,3 +93,29 @@ go build ./...
 ## Telegram Bot
 
 https://t.me/ekucher_go_bot
+
+## CI/CD Workflow
+
+The `develop` branch is automatically built and deployed using GitHub Actions, GitHub Container Registry, Helm and Argo CD.
+
+```mermaid
+flowchart LR
+    DEV[Developer] -->|git push develop| GH[GitHub Repository]
+    GH --> GA[GitHub Actions]
+    GA --> TEST[Go Test]
+    TEST --> BUILD[Go Build]
+    BUILD --> DOCKER[Docker Build linux/amd64]
+    DOCKER --> GHCR[GitHub Container Registry]
+    GHCR --> VALUES[Update Helm values.yaml]
+    VALUES --> GIT[Commit deployment tag]
+    GIT --> ARGO[Argo CD]
+    ARGO --> K8S[Kubernetes]
+    K8S --> KBOT[kbot Pod]
+    KBOT --> TG[Telegram API]
+```
+
+Container image format:
+
+```text
+ghcr.io/ekucher/kbot:v1.0.0-<git-sha>-linux-amd64
+```
