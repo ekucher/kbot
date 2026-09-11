@@ -57,7 +57,7 @@ spec:
         timeout: 5s
 
     exporters:
-      otlp/tempo:
+      otlp_grpc/tempo:
         endpoint: tempo.observability.svc.cluster.local:4317
         tls:
           insecure: true
@@ -76,7 +76,7 @@ spec:
             - memory_limiter
             - batch
           exporters:
-            - otlp/tempo
+            - otlp_grpc/tempo
 
         metrics:
           receivers:
