@@ -1,0 +1,19 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: observability-backends
+  namespace: flux-system
+spec:
+  interval: 10m
+
+  dependsOn:
+    - name: infrastructure
+
+  path: ./observability/backends
+  prune: true
+  wait: true
+  timeout: 10m
+
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
