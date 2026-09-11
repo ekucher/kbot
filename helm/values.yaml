@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/ekucher
-  tag: v1.0.0-89daa25-linux
+  tag: "v1.0.0-95b2698"
   arch: amd64
   pullPolicy: IfNotPresent
 
