@@ -21,12 +21,33 @@ spec:
         - name: {{ .Release.Name }}
           image: "{{ .Values.image.repository }}/{{ .Chart.Name }}:{{ .Values.image.tag }}-{{ .Values.image.arch | default "amd64" }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+
           env:
             - name: TELE_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.telegram.secretName }}
                   key: {{ .Values.telegram.secretKey }}
+
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.observability.otlpEndpoint | quote }}
+
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "deployment.environment.name={{ .Values.observability.environment }},k8s.namespace.name=$(POD_NAMESPACE),k8s.pod.name=$(POD_NAME)"
+
+            - name: APP_VERSION
+              value: "{{ .Values.image.tag }}-{{ .Values.image.arch | default "amd64" }}"
+
           resources:
             requests:
               cpu: 10m

@@ -9,3 +9,7 @@ image:
 telegram:
   secretName: kbot-secret
   secretKey: TELE_TOKEN
+
+observability:
+  otlpEndpoint: "http://kbot-collector.observability.svc.cluster.local:4317"
+  environment: "dev"
