@@ -1,12 +1,10 @@
-﻿replicaCount: 1
+replicaCount: 1
 
 image:
-  registry: "ghcr.io"
-  repository: "ekucher/kbot"
-  tag: "v1.0.0-89daa25"
-  pullPolicy: IfNotPresent
-  os: linux
+  repository: ghcr.io/ekucher
+  tag: v1.0.0-89daa25-linux
   arch: amd64
+  pullPolicy: IfNotPresent
 
 telegram:
   secretName: kbot-secret
