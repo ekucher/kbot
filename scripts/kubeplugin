@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+# kubectl kubeplugin
+#
+# Usage:
+#   kubectl kubeplugin <resource> <namespace>
+#
+# Example:
+#   kubectl kubeplugin pods kube-system
+#
+# Output:
+#   Resource, Namespace, Name, CPU, Memory
+#
+# Installation example:
+#   ln -s /path/to/scripts/kubeplugin ~/.local/bin/kubectl-kubeplugin
+
+set -euo pipefail
+
+usage() {
+    echo "Usage: kubectl kubeplugin <resource> <namespace>"
+    echo
+    echo "Example:"
+    echo "  kubectl kubeplugin pods kube-system"
+}
+
+if [[ $# -ne 2 ]]; then
+    usage >&2
+    exit 1
+fi
+
+RESOURCE_TYPE="$1"
+NAMESPACE="$2"
+
+if ! command -v kubectl >/dev/null 2>&1; then
+    echo "Error: kubectl is not installed or is not in PATH." >&2
+    exit 1
+fi
+
+case "$RESOURCE_TYPE" in
+    pod|pods)
+        ;;
+    *)
+        echo "Error: unsupported resource type '$RESOURCE_TYPE'." >&2
+        echo "Supported resource types: pod, pods" >&2
+        exit 1
+        ;;
+esac
+
+if ! kubectl get namespace "$NAMESPACE" >/dev/null 2>&1; then
+    echo "Error: namespace '$NAMESPACE' does not exist or is not accessible." >&2
+    exit 1
+fi
+
+if ! METRICS="$(kubectl top "$RESOURCE_TYPE" \
+    --namespace "$NAMESPACE" \
+    --no-headers)"; then
+    echo "Error: unable to retrieve resource metrics." >&2
+    echo "Check that Metrics Server is available and kubectl top works." >&2
+    exit 1
+fi
+
+echo "Resource, Namespace, Name, CPU, Memory"
+
+while read -r name cpu memory rest; do
+    [[ -z "$name" ]] && continue
+
+    printf "%s, %s, %s, %s, %s\n" \
+        "$RESOURCE_TYPE" \
+        "$NAMESPACE" \
+        "$name" \
+        "$cpu" \
+        "$memory"
+done <<< "$METRICS"

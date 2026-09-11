@@ -7,3 +7,4 @@ Dockerfile text eol=lf
 *.sh text eol=lf
 *.groovy text eol=lf
 .gitlab-ci.yml text eol=lf
+scripts/kubeplugin text eol=lf
