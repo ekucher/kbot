@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
 	"github.com/ekucher/kbot/internal/handlers"
+	"github.com/ekucher/kbot/internal/telemetry"
 	"github.com/spf13/cobra"
 	telebot "gopkg.in/telebot.v4"
 )
@@ -25,6 +27,23 @@ var kbotCmd = &cobra.Command{
 		if TeleToken == "" {
 			return fmt.Errorf("TELE_TOKEN environment variable is not set")
 		}
+
+		shutdownTelemetry, err := telemetry.Init(cmd.Context())
+		if err != nil {
+			return fmt.Errorf("initialize OpenTelemetry: %w", err)
+		}
+
+		defer func() {
+			ctx, cancel := context.WithTimeout(
+				context.Background(),
+				5*time.Second,
+			)
+			defer cancel()
+
+			if err := shutdownTelemetry(ctx); err != nil {
+				log.Printf("OpenTelemetry shutdown error: %v", err)
+			}
+		}()
 
 		kbot, err := telebot.NewBot(telebot.Settings{
 			Token: TeleToken,
@@ -54,14 +73,40 @@ func startHandler(c telebot.Context) error {
 }
 
 func registerHandlers(kbot *telebot.Bot) {
-	kbot.Handle("/start", startHandler)
-	kbot.Handle("/help", handlers.Help)
-	kbot.Handle("/hello", handlers.Hello)
+	kbot.Handle(
+		"/start",
+		telemetry.Handler("start", startHandler),
+	)
 
-	kbot.Handle(telebot.OnText, handlers.Text)
-	kbot.Handle(telebot.OnPhoto, handlers.Photo)
-	kbot.Handle(telebot.OnDocument, handlers.Document)
-	kbot.Handle(telebot.OnSticker, handlers.Sticker)
+	kbot.Handle(
+		"/help",
+		telemetry.Handler("help", handlers.Help),
+	)
+
+	kbot.Handle(
+		"/hello",
+		telemetry.Handler("hello", handlers.Hello),
+	)
+
+	kbot.Handle(
+		telebot.OnText,
+		telemetry.Handler("text", handlers.Text),
+	)
+
+	kbot.Handle(
+		telebot.OnPhoto,
+		telemetry.Handler("photo", handlers.Photo),
+	)
+
+	kbot.Handle(
+		telebot.OnDocument,
+		telemetry.Handler("document", handlers.Document),
+	)
+
+	kbot.Handle(
+		telebot.OnSticker,
+		telemetry.Handler("sticker", handlers.Sticker),
+	)
 }
 
 func init() {
