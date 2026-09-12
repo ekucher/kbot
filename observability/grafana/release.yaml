@@ -1,0 +1,92 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: grafana
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: grafana
+  targetNamespace: observability
+
+  chart:
+    spec:
+      chart: grafana
+      version: "13.2.3"
+      sourceRef:
+        kind: HelmRepository
+        name: grafana-community
+        namespace: flux-system
+      interval: 1h
+
+  install:
+    remediation:
+      retries: 3
+
+  upgrade:
+    remediation:
+      retries: 3
+
+  values:
+    persistence:
+      enabled: false
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+    service:
+      type: ClusterIP
+
+    datasources:
+      datasources.yaml:
+        apiVersion: 1
+        datasources:
+          - name: Prometheus
+            uid: prometheus
+            type: prometheus
+            access: proxy
+            url: http://prometheus-server.observability.svc.cluster.local
+            isDefault: true
+            editable: false
+
+          - name: Loki
+            uid: loki
+            type: loki
+            access: proxy
+            url: http://loki-gateway.observability.svc.cluster.local
+            editable: false
+            jsonData:
+              derivedFields:
+                - name: TraceID
+                  matcherRegex: 'trace_id=([0-9a-fA-F]{32})'
+                  datasourceUid: tempo
+                  url: '$${__value.raw}'
+
+          - name: Tempo
+            uid: tempo
+            type: tempo
+            access: proxy
+            url: http://tempo.observability.svc.cluster.local:3200
+            editable: false
+            jsonData:
+              nodeGraph:
+                enabled: true
+              serviceMap:
+                datasourceUid: prometheus
+              tracesToLogsV2:
+                datasourceUid: loki
+                filterByTraceID: true
+                filterBySpanID: false
+                spanStartTimeShift: "-5m"
+                spanEndTimeShift: "5m"
+
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        labelValue: "1"
+        searchNamespace: observability

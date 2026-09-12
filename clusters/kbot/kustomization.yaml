@@ -7,4 +7,5 @@ resources:
   - observability-backends.yaml
   - observability-collector.yaml
   - observability-logging.yaml
+  - observability-grafana.yaml
   - kbot.yaml
