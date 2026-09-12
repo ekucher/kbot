@@ -27,6 +27,13 @@ spec:
       retries: 3
 
   values:
+    hostVolumes:
+      - name: logs
+        hostPath:
+          path: /var/log
+          type: Directory
+        mountPath: /var/log
+
     storage:
       enabled: true
 
