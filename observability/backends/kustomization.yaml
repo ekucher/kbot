@@ -6,3 +6,4 @@ resources:
   - prometheus/release.yaml
   - tempo/repository.yaml
   - tempo/release.yaml
+  - loki/release.yaml

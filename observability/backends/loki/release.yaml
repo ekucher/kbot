@@ -1,0 +1,94 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: loki
+  namespace: flux-system
+spec:
+  interval: 30m
+  releaseName: loki
+  targetNamespace: observability
+
+  chart:
+    spec:
+      chart: loki
+      version: "18.12.2"
+      sourceRef:
+        kind: HelmRepository
+        name: grafana-community
+        namespace: flux-system
+      interval: 1h
+
+  install:
+    remediation:
+      retries: 3
+
+  upgrade:
+    remediation:
+      retries: 3
+
+  values:
+    deploymentMode: Monolithic
+
+    loki:
+      auth_enabled: false
+
+      commonConfig:
+        replication_factor: 1
+
+      storage:
+        type: filesystem
+
+      useTestSchema: true
+
+    backend:
+      replicas: 0
+
+    read:
+      replicas: 0
+
+    write:
+      replicas: 0
+
+    singleBinary:
+      replicas: 1
+
+      persistence:
+        enabled: false
+
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+    gateway:
+      enabled: true
+      replicas: 1
+
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+    lokiCanary:
+      enabled: false
+
+    test:
+      enabled: false
+
+    memcached:
+      enabled: false
+
+    memcachedExporter:
+      enabled: false
+
+    chunksCache:
+      enabled: false
+
+    resultsCache:
+      enabled: false

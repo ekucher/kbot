@@ -6,4 +6,5 @@ resources:
   - infrastructure.yaml
   - observability-backends.yaml
   - observability-collector.yaml
+  - observability-logging.yaml
   - kbot.yaml
